@@ -1,0 +1,163 @@
+// src/cards/cards.service.ts
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import { CreateCardDto } from './dto/create-card.dto';
+import { UpdateCardDto } from './dto/update-card.dto';
+import { Card } from 'src/models/card.scheme';
+import { Box } from 'src/models/box.scheme';
+import { FilterQueryDto } from './dto/filter-query.dto';
+import { PlayedCardDto } from './dto/played-card.dto';
+import { Review } from 'src/models/review.scheme';
+import { get } from 'lodash';
+
+@Injectable()
+export class CardService {
+  constructor(
+    @InjectModel(Card.name) private readonly cardModel: Model<Card>,
+    @InjectModel(Box.name) private readonly boxModule: Model<Box>,
+    @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
+  ) {}
+
+  async create(card: CreateCardDto, userId: string): Promise<Card> {
+    card.userId = userId;
+
+    const box = await this.boxModule.findById(card.boxId);
+    if (!box) throw new HttpException('Box not found', HttpStatus.NOT_FOUND);
+
+    const createdCard = new this.cardModel(card);
+    return createdCard.save();
+  }
+
+  async update(id: string, card: UpdateCardDto, userId: string): Promise<Card> {
+    const existingCard = await this.cardModel.findOne({
+      _id: id,
+      userId: userId,
+    });
+
+    if (!existingCard) {
+      throw new HttpException("Couldn't find card", HttpStatus.NOT_FOUND);
+    }
+
+    if (card.boxId && card.boxId !== String(existingCard.boxId)) {
+      const box = await this.boxModule.findOne({
+        _id: card.boxId,
+        userId,
+      });
+      if (!box) throw new HttpException('Box not found', HttpStatus.NOT_FOUND);
+    }
+
+    Object.assign(existingCard, card);
+    await existingCard.save();
+    return existingCard;
+  }
+
+  async findAll(query: FilterQueryDto, userId: string): Promise<Card[]> {
+    const filter: any = { userId };
+
+    if (query.search) {
+      filter.$or = [
+        { front: { $regex: query.search, $options: 'i' } },
+        { back: { $regex: query.search, $options: 'i' } },
+      ];
+    }
+
+    if (query.boxId) {
+      filter.boxId = query.boxId;
+    }
+
+    return this.cardModel.find(filter);
+  }
+
+  async getActiveCards(userId: string): Promise<Card[]> {
+    const userObjectId = new Types.ObjectId(userId);
+    const now = new Date();
+
+    const cards: Card[] = await this.cardModel
+      .aggregate([
+        {
+          $match: { userId: userObjectId },
+        },
+        {
+          $lookup: {
+            from: 'boxes',
+            localField: 'boxId',
+            foreignField: '_id',
+            as: 'box',
+          },
+        },
+        {
+          $unwind: '$box',
+        },
+        {
+          $addFields: {
+            nextReviewDate: {
+              $add: [
+                '$lastViewedDate',
+                { $multiply: ['$box.reviewInterval', 60 * 1000] },
+              ],
+            },
+          },
+        },
+        {
+          $match: {
+            nextReviewDate: { $lt: now },
+          },
+        },
+      ])
+      .exec();
+
+    return cards;
+  }
+
+  async findOne(id: string, userId: string) {
+    const card = await this.cardModel.findOne({ _id: id, userId }).exec();
+    if (!card) {
+      throw new HttpException('Card not found', HttpStatus.NOT_FOUND);
+    }
+
+    return card;
+  }
+
+  async remove(id: string, userId: string): Promise<Card> {
+    const card = await this.cardModel.findOne({ _id: id, userId }).exec();
+
+    if (!card) {
+      throw new NotFoundException('Card not found');
+    }
+
+    return await this.cardModel.findOneAndDelete({ _id: id, userId }).exec();
+  }
+
+  async play(playedCardDto: PlayedCardDto, userId: string) {
+    const { cardId, correct } = playedCardDto;
+
+    const card = await this.cardModel
+      .findOne({ _id: cardId, userId })
+      .populate('boxId')
+      .exec();
+
+    if (!card) {
+      throw new NotFoundException('Card not found');
+    }
+
+    const box = await this.boxModule.findOne({
+      reviewInterval: { $gt: correct ? get(card, 'boxId.reviewInterval') : -1 },
+    });
+
+    if (box) {
+      card.boxId = box._id as any;
+    }
+
+    card.lastViewedDate = Date.now();
+
+    await card.save();
+    await this.reviewModel.create({ cardId, userId, correct });
+    return this.reviewModel.find({ userId });
+  }
+}
