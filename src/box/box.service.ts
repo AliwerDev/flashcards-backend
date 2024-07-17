@@ -118,4 +118,14 @@ export class BoxService {
     }
     return box[0];
   }
+
+  async remove(id: string, userId: string): Promise<Box> {
+    const box = await this.boxModel.findOne({ _id: id, userId }).exec();
+
+    if (!box) {
+      throw new NotFoundException('Box not found');
+    }
+
+    return await this.boxModel.findOneAndDelete({ _id: id, userId }).exec();
+  }
 }

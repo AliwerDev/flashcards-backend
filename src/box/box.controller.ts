@@ -9,6 +9,7 @@ import {
   UsePipes,
   ValidationPipe,
   Get,
+  Delete,
 } from '@nestjs/common';
 import { BoxService } from './box.service';
 import { CreateBoxDto } from './dto/create-box.dto';
@@ -54,5 +55,12 @@ export class BoxController {
   @UsePipes(new ValidationPipe())
   async findOne(@Param() params: MongoIdParamDto, @User() user: UserEntity) {
     return this.boxesService.findOne(params.id, String(user._id));
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @UsePipes(new ValidationPipe())
+  remove(@Param() params: MongoIdParamDto, @User() user: UserEntity) {
+    return this.boxesService.remove(params.id, String(user._id));
   }
 }
