@@ -18,6 +18,7 @@ export class BoxService {
   async create(box: CreateBoxDto, userId: string): Promise<Box> {
     const existingBox = await this.boxModel.findOne({
       reviewInterval: box.reviewInterval,
+      userId,
     });
 
     if (existingBox) {

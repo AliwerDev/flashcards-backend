@@ -13,6 +13,6 @@ export class UserController {
   @Get('me')
   @UseGuards(AuthGuard('jwt'))
   findOne(@User() user: UserEntity) {
-    return this.userService.findOne(String(user._id));
+    return this.userService.findById(String(user._id));
   }
 }

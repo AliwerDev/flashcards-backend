@@ -42,8 +42,16 @@ export class UserService {
     return this.omitPassword(email);
   }
 
-  async findOne(id: string) {
+  async findById(id: string) {
     const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+    return this.omitPassword(user.email);
+  }
+
+  async findByEmail(email: string) {
+    const user = await this.userModel.findOne({ email });
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
