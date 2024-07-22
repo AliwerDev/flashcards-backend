@@ -78,8 +78,6 @@ export class CardService {
     const userObjectId = new Types.ObjectId(userId);
     const now = Date.now();
 
-    console.log(now);
-
     const cards: Card[] = await this.cardModel
       .aggregate([
         {
