@@ -5,10 +5,14 @@ import { Model } from 'mongoose';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from 'src/models/user.scheme';
+import { Box } from 'src/models/box.scheme';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(Box.name) private boxModel: Model<Box>,
+  ) {}
 
   private omitPassword(email: string) {
     return this.userModel.findOne({ email }).select('-password');
@@ -19,11 +23,14 @@ export class UserService {
     const user = await this.userModel.findOne({ email });
 
     if (user) {
-      throw new HttpException('Email already exists', HttpStatus.UNAUTHORIZED);
+      throw new HttpException('Email already exists', HttpStatus.BAD_REQUEST);
     }
 
     const newUser = new this.userModel(userDto);
-    await newUser.save();
+    const savedUser = await newUser.save();
+
+    // CREATE DEFAULT BOX FOR USER
+    await this.boxModel.create({ reviewInterval: 0, userId: savedUser._id });
     return this.omitPassword(email);
   }
 
@@ -53,7 +60,7 @@ export class UserService {
   async findByEmail(email: string) {
     const user = await this.userModel.findOne({ email });
     if (!user) {
-      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      return null;
     }
     return this.omitPassword(user.email);
   }

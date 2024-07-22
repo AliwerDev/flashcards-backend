@@ -1,12 +1,14 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import axios, { AxiosResponse } from 'axios';
 import { sign } from 'jsonwebtoken';
 import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
-  private readonly googleUserInfoUrl =
-    'https://www.googleapis.com/oauth2/v3/userinfo';
+  private googleUserInfoUrl = 'https://www.googleapis.com/oauth2/v3/userinfo';
+  private githubAccessTokenUrl = 'https://github.com/login/oauth/access_token';
+  private githubUserDataUrl = 'https://api.github.com/user';
+
   constructor(private userService: UserService) {}
 
   async signInPayload(payload: any) {
@@ -34,7 +36,41 @@ export class AuthService {
       });
       return response.data;
     } catch (error) {
-      throw new Error(`Failed to fetch user info: ${error.message}`);
+      throw new HttpException(
+        `Failed to fetch user info: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+  async getGithubAccessToken(code: string): Promise<any> {
+    const param = `?client_id=${process.env.GITHUB_CLIENT_ID}&client_secret=${process.env.GITHUB_CLIENT_SECRET}&code=${code}`;
+
+    try {
+      const response: AxiosResponse = await axios.post(
+        this.githubAccessTokenUrl + param,
+      );
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch github access token info: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  async getUserDataFromGithub(accessToken: string): Promise<any> {
+    try {
+      const response: AxiosResponse = await axios.get(this.githubUserDataUrl, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        `Failed to fetch github user info: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 }

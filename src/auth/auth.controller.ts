@@ -6,12 +6,12 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto } from 'src/shared/dto/register.dto';
-import { LoginDto } from 'src/shared/dto/login.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { UserService } from 'src/user/user.service';
 import { OAuth2Client } from 'google-auth-library';
-import { GoogleLoginDto } from 'src/shared/dto/google-login.dto';
+import { RegisterDto } from 'src/user/dto/register.dto';
+import { LoginDto } from 'src/user/dto/login.dto';
+import { GoogleLoginDto } from 'src/shared/dto/login.dto';
 
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -30,9 +30,7 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   async create(@Body() createAuthDto: RegisterDto) {
     const user = await this.userService.create(createAuthDto);
-
     const payload = { email: user.email, sub: user._id };
-
     const token = await this.authService.signInPayload(payload);
 
     return { user, token };
@@ -42,9 +40,7 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   async login(@Body() loginDto: LoginDto) {
     const user = await this.userService.findByLogin(loginDto);
-
     const payload = { email: user.email, sub: user._id };
-
     const token = await this.authService.signInPayload(payload);
 
     return { user, token };
@@ -52,7 +48,7 @@ export class AuthController {
 
   @Post('login-by-google')
   @UsePipes(new ValidationPipe())
-  async loginByGoog(@Body() googleLoginDto: GoogleLoginDto) {
+  async loginByGoogle(@Body() googleLoginDto: GoogleLoginDto) {
     let userGoogleData;
 
     if (googleLoginDto.credential) {
@@ -73,7 +69,8 @@ export class AuthController {
         email: userGoogleData.email,
         firstName: userGoogleData.given_name,
         lastName: userGoogleData.family_name,
-        password: 'ROOT_123',
+        picture: userGoogleData.picture,
+        password: userGoogleData.email.split('@')[0],
       });
 
     const payload = { email: user.email, sub: user._id };

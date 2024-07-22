@@ -127,6 +127,13 @@ export class BoxService {
       throw new NotFoundException('Box not found');
     }
 
+    if (box.reviewInterval === 0) {
+      throw new HttpException(
+        'Cannot delete default box',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     return await this.boxModel.findOneAndDelete({ _id: id, userId }).exec();
   }
 }

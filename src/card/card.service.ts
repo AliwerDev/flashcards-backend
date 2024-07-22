@@ -76,7 +76,9 @@ export class CardService {
 
   async getActiveCards(userId: string): Promise<Card[]> {
     const userObjectId = new Types.ObjectId(userId);
-    const now = new Date();
+    const now = Date.now();
+
+    console.log(now);
 
     const cards: Card[] = await this.cardModel
       .aggregate([

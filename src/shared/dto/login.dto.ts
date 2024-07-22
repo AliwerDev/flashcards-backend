@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty()
@@ -12,4 +12,22 @@ export class LoginDto {
   @IsNotEmpty()
   @MinLength(6)
   password: string;
+}
+
+export class GoogleLoginDto {
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+  credential: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  access_token: string;
+}
+
+export class GithubLoginDto {
+  @ApiProperty()
+  @IsString()
+  code: string;
 }

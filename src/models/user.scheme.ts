@@ -7,6 +7,7 @@ export interface IUser extends Document {
   email: string;
   name: string;
   password: string;
+  picture: string;
 }
 
 @Schema({ timestamps: true })
@@ -16,6 +17,9 @@ export class User extends Document {
 
   @Prop()
   lastName: string;
+
+  @Prop()
+  picture: string;
 
   @Prop({ unique: true, required: true })
   email: string;
