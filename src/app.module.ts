@@ -14,7 +14,9 @@ import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: ['.env.development', '.env.production'],
+    }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'files') }),
     MongooseModule.forRoot(process.env.MONGODB_URL),
     CardModule,
