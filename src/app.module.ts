@@ -11,6 +11,7 @@ import { OrderModule } from './order/order.module';
 import { CardModule } from './card/card.module';
 import { BoxModule } from './box/box.module';
 import { UserModule } from './user/user.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -27,7 +28,7 @@ import { UserModule } from './user/user.module';
     OrderModule,
     UserModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
