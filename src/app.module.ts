@@ -15,9 +15,7 @@ import { AppController } from './app.controller';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      envFilePath: ['.env.development', '.env.production'],
-    }),
+    ConfigModule.forRoot(),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'files') }),
     MongooseModule.forRoot(process.env.MONGODB_URL),
     CardModule,
