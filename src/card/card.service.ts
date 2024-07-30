@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CreateCardDto } from './dto/create-card.dto';
+import { CreateCardDto, CreateCardsDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { Card } from '../models/card.scheme';
 import { Box } from '../models/box.scheme';
@@ -32,6 +32,27 @@ export class CardService {
 
     const createdCard = new this.cardModel(card);
     return createdCard.save();
+  }
+
+  async createCards(cardsDto: CreateCardsDto, userId: string): Promise<Card[]> {
+    const box = await this.boxModule.findById(cardsDto.boxId);
+    if (!box) throw new HttpException('Box not found', HttpStatus.NOT_FOUND);
+
+    const cardsList = cardsDto.cards.map((card) => ({
+      ...card,
+      userId,
+      boxId: cardsDto.boxId,
+    }));
+
+    try {
+      await this.cardModel.insertMany(cardsList);
+      return this.findAll({}, userId);
+    } catch (error) {
+      throw new HttpException(
+        'Error creating cards',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async update(id: string, card: UpdateCardDto, userId: string): Promise<Card> {
@@ -71,7 +92,7 @@ export class CardService {
       filter.boxId = query.boxId;
     }
 
-    return this.cardModel.find(filter);
+    return this.cardModel.find(filter).sort({ createdAt: -1 });
   }
 
   async getActiveCards(userId: string): Promise<Card[]> {
