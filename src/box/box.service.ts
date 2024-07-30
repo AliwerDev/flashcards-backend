@@ -10,6 +10,7 @@ import { Model, Types } from 'mongoose';
 import { CreateBoxDto } from './dto/create-box.dto';
 import { UpdateBoxDto } from './dto/update-box.dto';
 import { Box } from '../models/box.scheme';
+import { BoxSearchQueryDto } from './dto/search.dto';
 
 @Injectable()
 export class BoxService {
@@ -31,6 +32,26 @@ export class BoxService {
     box.userId = userId;
     const createdBox = new this.boxModel(box);
     return createdBox.save();
+  }
+
+  async createDefaultBoxes(userId: string) {
+    const defaultBoxes = [
+      { reviewInterval: 0, userId }, // Daily
+      { reviewInterval: 1440, userId }, // Daily
+      { reviewInterval: 2880, userId }, // Every 2 days
+      { reviewInterval: 10080, userId }, // Weekly
+      { reviewInterval: 20160, userId }, // Biweekly
+      { reviewInterval: 43200, userId }, // Monthly
+    ];
+
+    try {
+      await this.boxModel.insertMany(defaultBoxes);
+    } catch (error) {
+      throw new HttpException(
+        'Error creating default boxes',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async update(id: string, box: UpdateBoxDto, userId: string): Promise<Box> {
@@ -60,34 +81,45 @@ export class BoxService {
     return existingBox;
   }
 
-  async findAll(userId: string): Promise<Box[]> {
+  async findAll(query: BoxSearchQueryDto, userId: string): Promise<Box[]> {
     const userObjectId = new Types.ObjectId(userId);
+    let boxes: Box[];
 
-    const boxes = await this.boxModel
-      .aggregate([
-        { $match: { userId: userObjectId } },
-        {
-          $lookup: {
-            from: 'cards',
-            localField: '_id',
-            foreignField: 'boxId',
-            as: 'cards',
-          },
-        },
-        {
-          $addFields: {
-            cardCount: { $size: '$cards' },
-          },
-        },
-        {
-          $project: {
-            cards: 0,
-          },
-        },
-        { $sort: { reviewInterval: 1 } },
-      ])
-      .exec();
+    console.log(query);
 
+    if (query.withCardCount === true || query.withCardCount === 'true') {
+      boxes = await this.boxModel
+        .aggregate([
+          { $match: { userId: userObjectId } },
+          {
+            $lookup: {
+              from: 'cards',
+              localField: '_id',
+              foreignField: 'boxId',
+              as: 'cards',
+            },
+          },
+          {
+            $addFields: {
+              cardCount: { $size: '$cards' },
+            },
+          },
+          {
+            $project: {
+              cards: 0,
+            },
+          },
+          { $sort: { reviewInterval: 1 } },
+        ])
+        .exec();
+    } else {
+      boxes = await this.boxModel
+        .find({ userId: userObjectId })
+        .sort({
+          reviewInterval: 1,
+        })
+        .exec();
+    }
     return boxes;
   }
 

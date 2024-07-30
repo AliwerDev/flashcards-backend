@@ -5,13 +5,13 @@ import { Model } from 'mongoose';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../models/user.scheme';
-import { Box } from '../models/box.scheme';
+import { BoxService } from 'src/box/box.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Box.name) private boxModel: Model<Box>,
+    readonly boxService: BoxService,
   ) {}
 
   private omitPassword(email: string) {
@@ -30,7 +30,7 @@ export class UserService {
     const savedUser = await newUser.save();
 
     // CREATE DEFAULT BOX FOR USER
-    await this.boxModel.create({ reviewInterval: 0, userId: savedUser._id });
+    await this.boxService.createDefaultBoxes(String(savedUser._id));
     return this.omitPassword(email);
   }
 

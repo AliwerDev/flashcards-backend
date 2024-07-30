@@ -10,6 +10,7 @@ import {
   ValidationPipe,
   Get,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { BoxService } from './box.service';
 import { CreateBoxDto } from './dto/create-box.dto';
@@ -20,6 +21,7 @@ import { Box } from '../models/box.scheme';
 import { User } from '../decorators/user.decorator';
 import { User as UserEntity } from '../models/user.scheme';
 import { MongoIdParamDto } from '../shared/dto/mongoId-param.dto';
+import { BoxSearchQueryDto } from './dto/search.dto';
 
 @ApiTags(Box.name)
 @Controller('box')
@@ -46,8 +48,8 @@ export class BoxController {
 
   @Get()
   @UseGuards(AuthGuard('jwt'))
-  async findAll(@User() user: UserEntity) {
-    return this.boxesService.findAll(String(user._id));
+  async findAll(@Query() query: BoxSearchQueryDto, @User() user: UserEntity) {
+    return this.boxesService.findAll(query, String(user._id));
   }
 
   @Get(':id')

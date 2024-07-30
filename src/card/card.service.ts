@@ -130,6 +130,7 @@ export class CardService {
             nextReviewDate: { $lt: now },
           },
         },
+        { $sort: { lastViewedDate: 1 } },
       ])
       .exec();
 

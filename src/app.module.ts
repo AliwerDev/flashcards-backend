@@ -12,6 +12,9 @@ import { CardModule } from './card/card.module';
 import { BoxModule } from './box/box.module';
 import { UserModule } from './user/user.module';
 import { AppController } from './app.controller';
+import { CategoryService } from './category/category.service';
+import { CategoriesModule } from './categories/categories.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -25,8 +28,9 @@ import { AppController } from './app.controller';
     ProductModule,
     OrderModule,
     UserModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, CategoryService],
 })
 export class AppModule {}
