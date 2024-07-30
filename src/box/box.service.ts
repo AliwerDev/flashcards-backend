@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateBoxDto } from './dto/create-box.dto';
 import { UpdateBoxDto } from './dto/update-box.dto';
-import { Box } from 'src/models/box.scheme';
+import { Box } from '../models/box.scheme';
 
 @Injectable()
 export class BoxService {

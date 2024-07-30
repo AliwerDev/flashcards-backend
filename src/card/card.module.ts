@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { CardService } from './card.service';
 import { CardController } from './card.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { Card, CardSchema } from 'src/models/card.scheme';
-import { SharedModule } from 'src/shared/shared.module';
-import { Box, BoxSchema } from 'src/models/box.scheme';
-import { Review, ReviewSchema } from 'src/models/review.scheme';
+import { Card, CardSchema } from '../models/card.scheme';
+import { SharedModule } from '../shared/shared.module';
+import { Box, BoxSchema } from '../models/box.scheme';
+import { Review, ReviewSchema } from '../models/review.scheme';
 
 @Module({
   imports: [

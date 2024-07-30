@@ -16,10 +16,10 @@ import { CreateBoxDto } from './dto/create-box.dto';
 import { UpdateBoxDto } from './dto/update-box.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { Box } from 'src/models/box.scheme';
-import { User } from 'src/decorators/user.decorator';
-import { User as UserEntity } from 'src/models/user.scheme';
-import { MongoIdParamDto } from 'src/shared/dto/mongoId-param.dto';
+import { Box } from '../models/box.scheme';
+import { User } from '../decorators/user.decorator';
+import { User as UserEntity } from '../models/user.scheme';
+import { MongoIdParamDto } from '../shared/dto/mongoId-param.dto';
 
 @ApiTags(Box.name)
 @Controller('box')

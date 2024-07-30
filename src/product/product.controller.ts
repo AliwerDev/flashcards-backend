@@ -19,7 +19,7 @@ import { UpdateProductDTO } from './dto/update-product.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { editorFileName } from 'src/utils/file-helper';
+import { editorFileName } from '../utils/file-helper';
 import { AuthGuard } from '@nestjs/passport';
 import { QueryProductDto } from './dto/query.product.dto';
 

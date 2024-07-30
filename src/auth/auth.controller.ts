@@ -7,11 +7,11 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
-import { UserService } from 'src/user/user.service';
 import { OAuth2Client } from 'google-auth-library';
-import { RegisterDto } from 'src/user/dto/register.dto';
-import { LoginDto } from 'src/user/dto/login.dto';
-import { GoogleLoginDto } from 'src/shared/dto/login.dto';
+import { UserService } from '../user/user.service';
+import { RegisterDto } from '../user/dto/register.dto';
+import { LoginDto } from '../user/dto/login.dto';
+import { GoogleLoginDto } from '../shared/dto/login.dto';
 
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,

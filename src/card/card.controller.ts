@@ -16,11 +16,11 @@ import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { User } from 'src/decorators/user.decorator';
-import { User as UserEntity } from 'src/models/user.scheme';
+import { User } from '../decorators/user.decorator';
+import { User as UserEntity } from '../models/user.scheme';
 import { FilterQueryDto } from './dto/filter-query.dto';
 import { PlayedCardDto } from './dto/played-card.dto';
-import { MongoIdParamDto } from 'src/shared/dto/mongoId-param.dto';
+import { MongoIdParamDto } from '../shared/dto/mongoId-param.dto';
 
 @ApiTags('Card')
 @Controller('card')

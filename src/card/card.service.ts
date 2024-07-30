@@ -9,11 +9,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateCardDto } from './dto/create-card.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
-import { Card } from 'src/models/card.scheme';
-import { Box } from 'src/models/box.scheme';
+import { Card } from '../models/card.scheme';
+import { Box } from '../models/box.scheme';
 import { FilterQueryDto } from './dto/filter-query.dto';
 import { PlayedCardDto } from './dto/played-card.dto';
-import { Review } from 'src/models/review.scheme';
+import { Review } from '../models/review.scheme';
 import { get } from 'lodash';
 
 @Injectable()
