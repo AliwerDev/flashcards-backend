@@ -180,6 +180,10 @@ export class CardService {
 
     await card.save();
     await this.reviewModel.create({ cardId, userId, correct });
-    return this.reviewModel.find({ userId });
+    return { success: true };
+  }
+
+  async getReviews(userId: string) {
+    return await this.reviewModel.find({ userId });
   }
 }

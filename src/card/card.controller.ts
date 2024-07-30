@@ -67,6 +67,12 @@ export class CardController {
     return this.cardService.getActiveCards(String(user._id));
   }
 
+  @Get('reviews')
+  @UseGuards(AuthGuard('jwt'))
+  reviews(@User() user: UserEntity) {
+    return this.cardService.getReviews(String(user._id));
+  }
+
   @Get(':id')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
