@@ -11,6 +11,7 @@ import { CreateBoxDto } from './dto/create-box.dto';
 import { UpdateBoxDto } from './dto/update-box.dto';
 import { Box } from '../models/box.scheme';
 import { BoxSearchQueryDto } from './dto/search.dto';
+import { get } from 'lodash';
 
 @Injectable()
 export class BoxService {
@@ -153,10 +154,17 @@ export class BoxService {
   }
 
   async remove(id: string, userId: string): Promise<Box> {
-    const box = await this.boxModel.findOne({ _id: id, userId }).exec();
+    const box = await this.findOne(id, userId);
 
     if (!box) {
       throw new NotFoundException('Box not found');
+    }
+
+    if (!!get(box, 'cards.length')) {
+      throw new HttpException(
+        'Box cannot be deleted because it has cards',
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     if (box.reviewInterval === 0) {

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { SharedModule } from './shared/shared.module';
 import { AuthModule } from './auth/auth.module';
@@ -12,8 +12,6 @@ import { CardModule } from './card/card.module';
 import { BoxModule } from './box/box.module';
 import { UserModule } from './user/user.module';
 import { AppController } from './app.controller';
-import { CategoryService } from './category/category.service';
-import { CategoriesModule } from './categories/categories.module';
 import { CategoriesModule } from './categories/categories.module';
 
 @Module({
@@ -31,6 +29,6 @@ import { CategoriesModule } from './categories/categories.module';
     CategoriesModule,
   ],
   controllers: [AppController],
-  providers: [AppService, CategoryService],
+  providers: [AppService],
 })
 export class AppModule {}
