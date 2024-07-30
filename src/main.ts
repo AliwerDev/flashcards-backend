@@ -4,6 +4,19 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bodyParser: true });
+
+  app.enableCors({
+    origin: [
+      'https://flashcardes.vercel.app',
+      'https://cards.scripter.uz',
+      'http://localhost:3000',
+      'http://localhost:3001',
+    ],
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Authorization',
+    credentials: true, // if you need to support cookies or HTTP authentication
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Laitner System Flashcards')
     .setDescription(
@@ -12,14 +25,10 @@ async function bootstrap() {
     .build();
 
   app.setGlobalPrefix('api');
-  app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  });
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('swagger', app, document);
   await app.listen(process.env.PORT || 3000);
 }
+
 bootstrap();
