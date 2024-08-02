@@ -14,8 +14,6 @@ import { Box } from '../models/box.scheme';
 import { FilterQueryDto } from './dto/filter-query.dto';
 import { PlayedCardDto } from './dto/played-card.dto';
 import { Review } from '../models/review.scheme';
-import { get } from 'lodash';
-
 @Injectable()
 export class CardService {
   constructor(
@@ -159,23 +157,27 @@ export class CardService {
   async play(playedCardDto: PlayedCardDto, userId: string) {
     const { cardId, correct } = playedCardDto;
 
-    const card = await this.cardModel
-      .findOne({ _id: cardId, userId })
-      .populate('boxId')
-      .exec();
+    const card = await this.cardModel.findOne({ _id: cardId, userId }).exec();
 
     if (!card) {
       throw new NotFoundException('Card not found');
     }
 
-    const box = await this.boxModule.findOne({
-      reviewInterval: { $gt: correct ? get(card, 'boxId.reviewInterval') : -1 },
-    });
+    const boxes = await this.boxModule
+      .find({ userId: userId })
+      .sort({
+        reviewInterval: 1,
+      })
+      .exec();
 
-    if (box) {
-      card.boxId = box._id as any;
+    const boxIndex = boxes.findIndex(
+      (b) => String(b._id) === String(card.boxId),
+    );
+
+    const nextBox = boxes[boxIndex + 1];
+    if (boxIndex >= 0 && nextBox) {
+      card.boxId = nextBox._id as any;
     }
-
     card.lastViewedDate = Date.now();
 
     await card.save();

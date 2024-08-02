@@ -86,8 +86,6 @@ export class BoxService {
     const userObjectId = new Types.ObjectId(userId);
     let boxes: Box[];
 
-    console.log(query);
-
     if (query.withCardCount === true || query.withCardCount === 'true') {
       boxes = await this.boxModel
         .aggregate([
