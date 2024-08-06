@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { BoxService } from './box.service';
 import { BoxController } from './box.controller';
 import { Box, BoxSchema } from '../models/box.scheme';
-import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Box.name, schema: BoxSchema }])],

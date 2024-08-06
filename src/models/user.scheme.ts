@@ -8,6 +8,12 @@ export interface IUser extends Document {
   name: string;
   password: string;
   picture: string;
+  role: string;
+}
+
+export enum UserRoleEnum {
+  USER = 'user',
+  ADMIN = 'admin',
 }
 
 @Schema({ timestamps: true })
@@ -26,6 +32,9 @@ export class User extends Document {
 
   @Prop()
   password: string;
+
+  @Prop({ required: true, default: 'user' })
+  role: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

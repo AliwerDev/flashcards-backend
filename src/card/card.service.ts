@@ -174,7 +174,7 @@ export class CardService {
       (b) => String(b._id) === String(card.boxId),
     );
 
-    const nextBox = boxes[boxIndex + 1];
+    const nextBox = correct ? boxes[boxIndex + 1] : boxes[boxIndex - 1];
     if (boxIndex >= 0 && nextBox) {
       card.boxId = nextBox._id as any;
     }

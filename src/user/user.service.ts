@@ -6,6 +6,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../models/user.scheme';
 import { BoxService } from 'src/box/box.service';
+import { UpdateRoleDto } from './dto/update.dto';
 
 @Injectable()
 export class UserService {
@@ -34,6 +35,48 @@ export class UserService {
     return this.omitPassword(email);
   }
 
+  async updateRole(data: UpdateRoleDto, user: User) {
+    if (user.role !== 'admin') {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    return this.userModel.findOneAndUpdate(
+      { _id: data.userId },
+      { role: data.role },
+    );
+  }
+
+  async findAll(user: User) {
+    if (user.role !== 'admin') {
+      throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+    }
+
+    const users = await this.userModel
+      .aggregate([
+        {
+          $lookup: {
+            from: 'cards',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'cards',
+          },
+        },
+        {
+          $addFields: {
+            cardCount: { $size: '$cards' },
+          },
+        },
+        {
+          $project: {
+            cards: 0,
+            password: 0,
+          },
+        },
+      ])
+      .exec();
+    return users;
+  }
+
   async findByLogin(userDto: LoginDto) {
     const { email, password } = userDto;
     const user = await this.userModel.findOne({ email });
@@ -50,11 +93,11 @@ export class UserService {
   }
 
   async findById(id: string) {
-    const user = await this.userModel.findById(id);
+    const user = await this.userModel.findById(id, '-password');
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
-    return this.omitPassword(user.email);
+    return user;
   }
 
   async findByEmail(email: string) {
