@@ -33,6 +33,9 @@ export class User extends Document {
   @Prop()
   password: string;
 
+  @Prop()
+  chatId: string;
+
   @Prop({ required: true, default: 'user' })
   role: string;
 }
