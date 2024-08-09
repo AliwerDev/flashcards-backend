@@ -105,7 +105,7 @@ export class BoxService {
           },
           {
             $project: {
-              // cards: 0,
+              cards: 0,
             },
           },
           { $sort: { reviewInterval: 1 } },
