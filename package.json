@@ -7,7 +7,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "NODE_ENV=development nest start",
-    "start:prod": "node dist/main",
+    "start:prod": "NODE_ENV=production nest start",
     "dev": "NODE_ENV=development nest start --watch",
     "build:dev": "NODE_ENV=development nest build",
     "build:prod": "NODE_ENV=production nest build"

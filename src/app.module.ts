@@ -4,10 +4,8 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { SharedModule } from './shared/shared.module';
 import { AuthModule } from './auth/auth.module';
-import { ProductModule } from './product/product.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
-import { OrderModule } from './order/order.module';
 import { CardModule } from './card/card.module';
 import { BoxModule } from './box/box.module';
 import { UserModule } from './user/user.module';
@@ -27,8 +25,6 @@ import { CategoriesModule } from './categories/categories.module';
     BoxModule,
     SharedModule,
     AuthModule,
-    ProductModule,
-    OrderModule,
     UserModule,
     FilesModule,
     CategoriesModule,
