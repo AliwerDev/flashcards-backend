@@ -15,6 +15,15 @@ export class CategoriesService {
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto, userId: string) {
+    const categories = await this.categoryModel.find({ userId });
+
+    if (categories.length >= 5) {
+      throw new HttpException(
+        'Maximum number of categories reached',
+        HttpStatus.FORBIDDEN,
+      );
+    }
+
     const category = {
       title: createCategoryDto.title,
       url: createUrlFromTitle(createCategoryDto.title),
@@ -59,8 +68,15 @@ export class CategoriesService {
   }
 
   async remove(id: string, userId: string) {
-    const result = await this.categoryModel.deleteOne({ userId, _id: id });
+    const categories = await this.categoryModel.find({ userId });
+    if (categories.length === 1) {
+      throw new HttpException(
+        'Cannot delete the last category',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
+    const result = await this.categoryModel.deleteOne({ userId, _id: id });
     if (result.deletedCount === 0) {
       throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
     }
