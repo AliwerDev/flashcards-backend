@@ -5,10 +5,17 @@ import * as mongoose from 'mongoose';
 @Schema({ timestamps: true })
 export class Card extends Document {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
-  userId: mongoose.Schema.Types.ObjectId;
+  userId: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Box', required: true })
-  boxId: mongoose.Schema.Types.ObjectId;
+  boxId: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true,
+  })
+  categoryId: string;
 
   @Prop({ required: true })
   front: string;

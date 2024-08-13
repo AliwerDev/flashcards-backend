@@ -20,7 +20,7 @@ export class BoxService {
   async create(box: CreateBoxDto, userId: string): Promise<Box> {
     const existingBox = await this.boxModel.findOne({
       reviewInterval: box.reviewInterval,
-      userId,
+      categoryId: box.categoryId,
     });
 
     if (existingBox) {
@@ -35,14 +35,14 @@ export class BoxService {
     return createdBox.save();
   }
 
-  async createDefaultBoxes(userId: string) {
+  async createDefaultBoxes(categoryId: string, userId: string) {
     const defaultBoxes = [
-      { reviewInterval: 0, userId }, // Daily
-      { reviewInterval: 1440, userId }, // Daily
-      { reviewInterval: 2880, userId }, // Every 2 days
-      { reviewInterval: 10080, userId }, // Weekly
-      { reviewInterval: 20160, userId }, // Biweekly
-      { reviewInterval: 43200, userId }, // Monthly
+      { reviewInterval: 0, userId, categoryId }, // Daily
+      { reviewInterval: 86400, userId, categoryId }, // Daily
+      { reviewInterval: 172800, userId, categoryId }, // Every 2 days
+      { reviewInterval: 604800, userId, categoryId }, // Weekly
+      { reviewInterval: 1209600, userId, categoryId }, // Biweekly
+      { reviewInterval: 2592000, userId, categoryId }, // Monthly
     ];
 
     try {
@@ -82,14 +82,19 @@ export class BoxService {
     return existingBox;
   }
 
-  async findAll(query: BoxSearchQueryDto, userId: string): Promise<Box[]> {
+  async findAll(
+    categoryId: string,
+    query: BoxSearchQueryDto,
+    userId: string,
+  ): Promise<Box[]> {
+    const categoryObjectId = new Types.ObjectId(categoryId);
     const userObjectId = new Types.ObjectId(userId);
     let boxes: Box[];
 
     if (query.withCardCount === true || query.withCardCount === 'true') {
       boxes = await this.boxModel
         .aggregate([
-          { $match: { userId: userObjectId } },
+          { $match: { userId: userObjectId, categoryId: categoryObjectId } },
           {
             $lookup: {
               from: 'cards',

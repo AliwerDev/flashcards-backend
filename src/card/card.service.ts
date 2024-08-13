@@ -22,11 +22,12 @@ export class CardService {
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
   ) {}
 
-  async create(card: CreateCardDto, userId: string): Promise<Card> {
-    card.userId = userId;
+  async create(createCardDto: CreateCardDto, userId: string): Promise<Card> {
+    const card: any = { ...createCardDto, userId };
 
     const box = await this.boxModule.findById(card.boxId);
     if (!box) throw new HttpException('Box not found', HttpStatus.NOT_FOUND);
+    card.categoryId = box.categoryId;
 
     const createdCard = new this.cardModel(card);
     return createdCard.save();
@@ -39,6 +40,7 @@ export class CardService {
     const cardsList = cardsDto.cards.map((card) => ({
       ...card,
       userId,
+      categoryId: box.categoryId,
       boxId: cardsDto.boxId,
     }));
 
@@ -90,17 +92,23 @@ export class CardService {
       filter.boxId = query.boxId;
     }
 
+    if (query.categoryId) {
+      filter.categoryId = query.categoryId;
+    }
+
     return this.cardModel.find(filter).sort({ createdAt: -1 });
   }
 
-  async getActiveCards(userId: string): Promise<Card[]> {
+  async getActiveCards(categoryId: string, userId: string): Promise<Card[]> {
+    const categoryObjectId = new Types.ObjectId(categoryId);
     const userObjectId = new Types.ObjectId(userId);
+
     const now = Date.now();
 
     const cards: Card[] = await this.cardModel
       .aggregate([
         {
-          $match: { userId: userObjectId },
+          $match: { userId: userObjectId, categoryId: categoryObjectId },
         },
         {
           $lookup: {
@@ -118,7 +126,7 @@ export class CardService {
             nextReviewDate: {
               $add: [
                 '$lastViewedDate',
-                { $multiply: ['$box.reviewInterval', 60 * 1000] },
+                { $multiply: ['$box.reviewInterval', 1000] },
               ],
             },
           },
@@ -154,7 +162,7 @@ export class CardService {
     return await this.cardModel.findOneAndDelete({ _id: id, userId }).exec();
   }
 
-  async play(playedCardDto: PlayedCardDto, userId: string) {
+  async play(categoryId: string, playedCardDto: PlayedCardDto, userId: string) {
     const { cardId, correct } = playedCardDto;
 
     const card = await this.cardModel.findOne({ _id: cardId, userId }).exec();
@@ -164,7 +172,7 @@ export class CardService {
     }
 
     const boxes = await this.boxModule
-      .find({ userId: userId })
+      .find({ userId, categoryId })
       .sort({
         reviewInterval: 1,
       })

@@ -10,8 +10,6 @@ import {
 import { Type } from 'class-transformer';
 
 export class CreateCardDto {
-  userId: string;
-
   @ApiProperty({
     description: 'The front side of the flashcard',
     example: 'Hello',
@@ -55,8 +53,6 @@ class CardDto {
   back: string;
 }
 export class CreateCardsDto {
-  userId: string;
-
   @ApiProperty({
     description: 'The ID of the box',
     example: '60c72b2f9b1d8e35b8f06f88',

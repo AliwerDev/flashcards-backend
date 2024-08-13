@@ -8,7 +8,10 @@ export class Category extends Document {
   userId: mongoose.Schema.Types.ObjectId;
 
   @Prop({ required: true })
-  reviewInterval: number;
+  url: string;
+
+  @Prop({ required: true })
+  title: string;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

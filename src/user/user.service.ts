@@ -1,18 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../models/user.scheme';
-import { BoxService } from 'src/box/box.service';
 import { UpdateRoleDto } from './dto/update.dto';
+import { CategoriesService } from 'src/categories/categories.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    readonly boxService: BoxService,
+    readonly categoriesService: CategoriesService,
   ) {}
 
   private omitPassword(email: string) {
@@ -31,7 +31,19 @@ export class UserService {
     const savedUser = await newUser.save();
 
     // CREATE DEFAULT BOX FOR USER
-    await this.boxService.createDefaultBoxes(String(savedUser._id));
+
+    const defaultCategory = await this.categoriesService.create(
+      { title: 'Default' },
+      String(savedUser._id),
+    );
+
+    if (!defaultCategory) {
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
     return this.omitPassword(email);
   }
 
@@ -93,7 +105,28 @@ export class UserService {
   }
 
   async findById(id: string) {
-    const user = await this.userModel.findById(id, '-password');
+    const userObjectId = new Types.ObjectId(id);
+
+    const userArray = await this.userModel
+      .aggregate([
+        { $match: { _id: userObjectId } },
+        {
+          $lookup: {
+            from: 'categories',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'categories',
+          },
+        },
+        {
+          $project: {
+            password: 0,
+          },
+        },
+      ])
+      .exec();
+    const user = userArray.length > 0 ? userArray[0] : null;
+
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }

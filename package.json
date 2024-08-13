@@ -6,12 +6,11 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
-    "dev": "nest start --watch",
-    "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main"
+    "start": "NODE_ENV=development nest start",
+    "start:prod": "node dist/main",
+    "dev": "NODE_ENV=development nest start --watch",
+    "build:dev": "NODE_ENV=development nest build",
+    "build:prod": "NODE_ENV=production nest build"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",

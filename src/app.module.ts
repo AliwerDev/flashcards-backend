@@ -13,10 +13,14 @@ import { BoxModule } from './box/box.module';
 import { UserModule } from './user/user.module';
 import { AppController } from './app.controller';
 import { FilesModule } from './files/files.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
+      isGlobal: true,
+    }),
     ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'files') }),
     MongooseModule.forRoot(process.env.MONGODB_URL),
     CardModule,
@@ -27,6 +31,7 @@ import { FilesModule } from './files/files.module';
     OrderModule,
     UserModule,
     FilesModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

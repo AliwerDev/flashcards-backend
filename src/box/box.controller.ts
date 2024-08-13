@@ -20,7 +20,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { Box } from '../models/box.scheme';
 import { User } from '../decorators/user.decorator';
 import { User as UserEntity } from '../models/user.scheme';
-import { MongoIdParamDto } from '../shared/dto/mongoId-param.dto';
 import { BoxSearchQueryDto } from './dto/search.dto';
 
 @ApiTags(Box.name)
@@ -39,30 +38,34 @@ export class BoxController {
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
   async update(
-    @Param() params: MongoIdParamDto,
+    @Param('id') id: string,
     @Body() updateBoxDto: UpdateBoxDto,
     @User() user: UserEntity,
   ) {
-    return this.boxesService.update(params.id, updateBoxDto, String(user._id));
+    return this.boxesService.update(id, updateBoxDto, String(user._id));
   }
 
-  @Get()
+  @Get('list/:categoryId')
   @UseGuards(AuthGuard('jwt'))
-  async findAll(@Query() query: BoxSearchQueryDto, @User() user: UserEntity) {
-    return this.boxesService.findAll(query, String(user._id));
+  async findAll(
+    @Param('categoryId') categoryId: string,
+    @Query() query: BoxSearchQueryDto,
+    @User() user: UserEntity,
+  ) {
+    return this.boxesService.findAll(categoryId, query, String(user._id));
   }
 
   @Get(':id')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
-  async findOne(@Param() params: MongoIdParamDto, @User() user: UserEntity) {
-    return this.boxesService.findOne(params.id, String(user._id));
+  async findOne(@Param('id') id: string, @User() user: UserEntity) {
+    return this.boxesService.findOne(id, String(user._id));
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
-  remove(@Param() params: MongoIdParamDto, @User() user: UserEntity) {
-    return this.boxesService.remove(params.id, String(user._id));
+  remove(@Param('id') id: string, @User() user: UserEntity) {
+    return this.boxesService.remove(id, String(user._id));
   }
 }

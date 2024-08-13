@@ -8,4 +8,8 @@ export class FilterQueryDto {
   @IsOptional()
   @IsMongoId()
   boxId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  categoryId?: string;
 }
