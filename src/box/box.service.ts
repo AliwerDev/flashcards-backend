@@ -118,7 +118,7 @@ export class BoxService {
         .exec();
     } else {
       boxes = await this.boxModel
-        .find({ userId: userObjectId })
+        .find({ userId, categoryId })
         .sort({
           reviewInterval: 1,
         })

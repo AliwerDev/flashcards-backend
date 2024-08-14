@@ -8,6 +8,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'https://flashcardes.vercel.app',
+      'https://flashcards.uz',
       'https://cards.scripter.uz',
       'http://localhost:3000',
       'http://localhost:3001',
