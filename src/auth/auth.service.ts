@@ -14,7 +14,6 @@ export class AuthService {
   async signInPayload(payload: any) {
     return sign(payload, process.env.JWT_SECRET, {
       expiresIn: '8d',
-      algorithm: 'HS256',
     });
   }
   async validateUser(payload: any): Promise<any> {
