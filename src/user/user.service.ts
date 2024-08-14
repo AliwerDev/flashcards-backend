@@ -5,7 +5,7 @@ import { Model, Types } from 'mongoose';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../models/user.scheme';
-import { UpdateRoleDto } from './dto/update.dto';
+import { UpdateRoleDto, UpdateUserDto } from './dto/update.dto';
 import { CategoriesService } from 'src/categories/categories.service';
 
 @Injectable()
@@ -55,6 +55,13 @@ export class UserService {
     return this.userModel.findOneAndUpdate(
       { _id: data.userId },
       { role: data.role },
+    );
+  }
+
+  async updateUser(data: UpdateUserDto, userId: string) {
+    return await this.userModel.findOneAndUpdate(
+      { _id: userId },
+      { firstName: data.firstName, lastName: data.lastName },
     );
   }
 

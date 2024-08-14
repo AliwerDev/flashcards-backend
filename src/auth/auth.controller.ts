@@ -4,6 +4,8 @@ import {
   Body,
   UsePipes,
   ValidationPipe,
+  UseGuards,
+  Get,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ApiTags } from '@nestjs/swagger';
@@ -12,6 +14,9 @@ import { UserService } from '../user/user.service';
 import { RegisterDto } from '../user/dto/register.dto';
 import { LoginDto } from '../user/dto/login.dto';
 import { GoogleLoginDto } from '../shared/dto/login.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { User } from 'src/decorators/user.decorator';
+import { User as UserEntity } from 'src/models/user.scheme';
 
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -76,5 +81,13 @@ export class AuthController {
     const payload = { email: user.email, sub: user._id };
     const token = await this.authService.signInPayload(payload);
     return { user, token };
+  }
+
+  @Get('token')
+  @UseGuards(AuthGuard('jwt'))
+  async redirectTg(@User() user: UserEntity) {
+    const payload = { email: user.email, sub: user._id };
+    const token = await this.authService.signInPayload(payload);
+    return token;
   }
 }

@@ -4,7 +4,7 @@ import { User as UserEntity } from '../models/user.scheme';
 import { User } from '../decorators/user.decorator';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags } from '@nestjs/swagger';
-import { UpdateRoleDto } from './dto/update.dto';
+import { UpdateRoleDto, UpdateUserDto } from './dto/update.dto';
 
 @ApiTags('User')
 @Controller('user')
@@ -21,6 +21,12 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   findAll(@User() user: UserEntity) {
     return this.userService.findAll(user);
+  }
+
+  @Patch('update')
+  @UseGuards(AuthGuard('jwt'))
+  updateUser(@Body() body: UpdateUserDto, @User() user: UserEntity) {
+    return this.userService.updateUser(body, String(user._id));
   }
 
   @Patch('role')
