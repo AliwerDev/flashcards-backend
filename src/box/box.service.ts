@@ -84,8 +84,8 @@ export class BoxService {
 
   async findAll(
     categoryId: string,
-    query: BoxSearchQueryDto,
     userId: string,
+    query: BoxSearchQueryDto,
   ): Promise<Box[]> {
     const categoryObjectId = new Types.ObjectId(categoryId);
     const userObjectId = new Types.ObjectId(userId);

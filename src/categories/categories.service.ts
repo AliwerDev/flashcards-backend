@@ -37,7 +37,6 @@ export class CategoriesService {
 
   async findAll(userId: string) {
     const categories = await this.categoryModel.find({ userId });
-
     return categories;
   }
 

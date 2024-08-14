@@ -17,6 +17,12 @@ export class Review extends Document {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Card', required: true })
   cardId: mongoose.Schema.Types.ObjectId;
 
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+  })
+  categoryId: mongoose.Schema.Types.ObjectId;
+
   @Prop({ required: true, type: Date, default: Date.now() })
   reviewDate: Date;
 

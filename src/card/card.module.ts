@@ -6,6 +6,7 @@ import { Card, CardSchema } from '../models/card.scheme';
 import { SharedModule } from '../shared/shared.module';
 import { Box, BoxSchema } from '../models/box.scheme';
 import { Review, ReviewSchema } from '../models/review.scheme';
+import { BoxModule } from 'src/box/box.module';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { Review, ReviewSchema } from '../models/review.scheme';
       { name: Box.name, schema: BoxSchema },
       { name: Review.name, schema: ReviewSchema },
     ]),
-
+    BoxModule,
     SharedModule,
   ],
   controllers: [CardController],

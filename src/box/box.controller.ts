@@ -52,7 +52,7 @@ export class BoxController {
     @Query() query: BoxSearchQueryDto,
     @User() user: UserEntity,
   ) {
-    return this.boxesService.findAll(categoryId, query, String(user._id));
+    return this.boxesService.findAll(categoryId, String(user._id), query);
   }
 
   @Get(':id')
