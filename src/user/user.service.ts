@@ -81,13 +81,23 @@ export class UserService {
           },
         },
         {
+          $lookup: {
+            from: 'reviews',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'reviews',
+          },
+        },
+        {
           $addFields: {
             cardCount: { $size: '$cards' },
+            reviewsCount: { $size: '$reviews' },
           },
         },
         {
           $project: {
             cards: 0,
+            reviews: 0,
             password: 0,
           },
         },
