@@ -7,12 +7,15 @@ import { LoginDto } from './dto/login.dto';
 import { User } from '../models/user.scheme';
 import { UpdateRoleDto, UpdateUserDto } from './dto/update.dto';
 import { CategoriesService } from 'src/categories/categories.service';
+import { CreateChatDto } from 'src/chat/dto/create-chat.dto';
+import { ChatService } from 'src/chat/chat.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     readonly categoriesService: CategoriesService,
+    readonly chatService: ChatService,
   ) {}
 
   private omitPassword(email: string) {
@@ -63,6 +66,22 @@ export class UserService {
       { _id: userId },
       { firstName: data.firstName, lastName: data.lastName },
     );
+  }
+
+  async connectTgAccaunt(chat: CreateChatDto) {
+    const existChat = await this.chatService.findOne(chat.id);
+    if (existChat) {
+      throw new HttpException('Chat already connected', HttpStatus.CONFLICT);
+    }
+
+    const user = await this.userModel.findOne({ _id: chat.userId }).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    await this.chatService.create(chat);
+
+    return user;
   }
 
   async findAll(user: User) {

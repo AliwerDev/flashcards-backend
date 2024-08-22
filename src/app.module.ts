@@ -11,6 +11,8 @@ import { AppController } from './app.controller';
 import { CategoriesModule } from './categories/categories.module';
 // import { join } from 'path';
 // import { ServeStaticModule } from '@nestjs/serve-static';
+import { ChatModule } from './chat/chat.module';
+import { StatisticsModule } from './statistics/statistics.module';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { CategoriesModule } from './categories/categories.module';
     SharedModule,
     AuthModule,
     UserModule,
+    ChatModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -20,5 +20,6 @@ import { BoxModule } from 'src/box/box.module';
   ],
   controllers: [CardController],
   providers: [CardService],
+  exports: [CardService],
 })
 export class CardModule {}

@@ -141,16 +141,16 @@ export class CardService {
 
   // Method to retrieve active cards that need review for a specific category
   async getActiveCards(categoryId: string, userId: string): Promise<Card[]> {
-    const categoryObjectId = new Types.ObjectId(categoryId);
-    const userObjectId = new Types.ObjectId(userId);
-
     const now = Date.now();
+
+    const match: any = { userId: new Types.ObjectId(userId) };
+    if (categoryId !== 'ALL') match.categoryId = new Types.ObjectId(categoryId);
 
     // Aggregate cards based on review intervals and return those that need review
     const cards: Card[] = await this.cardModel
       .aggregate([
         {
-          $match: { userId: userObjectId, categoryId: categoryObjectId },
+          $match: match,
         },
         {
           $match: {
@@ -233,5 +233,13 @@ export class CardService {
   // Method to retrieve all review logs for the user
   async getReviews(userId: string) {
     return await this.reviewModel.find({ userId });
+  }
+
+  async deleteMany(categoryId: string) {
+    const result = await this.cardModel.deleteMany({ categoryId });
+    if (result.deletedCount === 0) {
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    }
+    return { success: true };
   }
 }

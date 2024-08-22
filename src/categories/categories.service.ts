@@ -6,12 +6,14 @@ import { Category } from 'src/models/category.scheme';
 import { Model } from 'mongoose';
 import { BoxService } from 'src/box/box.service';
 import { createUrlFromTitle } from 'src/utils/functions';
+import { CardService } from 'src/card/card.service';
 
 @Injectable()
 export class CategoriesService {
   constructor(
     @InjectModel(Category.name) private categoryModel: Model<Category>,
     readonly boxService: BoxService,
+    readonly cardService: CardService,
   ) {}
 
   async create(createCategoryDto: CreateCategoryDto, userId: string) {
@@ -75,11 +77,10 @@ export class CategoriesService {
       );
     }
 
-    const result = await this.categoryModel.deleteOne({ userId, _id: id });
-    if (result.deletedCount === 0) {
-      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-    }
+    await this.boxService.deleteMany(id);
+    await this.cardService.deleteMany(id);
+    await this.categoryModel.deleteOne({ userId, _id: id });
 
-    return `This action removes a #${id} category`;
+    return `This action removes a #${id} category and all related cards and boxes`;
   }
 }

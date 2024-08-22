@@ -87,14 +87,14 @@ export class BoxService {
     userId: string,
     query: BoxSearchQueryDto,
   ): Promise<Box[]> {
-    const categoryObjectId = new Types.ObjectId(categoryId);
-    const userObjectId = new Types.ObjectId(userId);
     let boxes: Box[];
+    const match: any = { userId: new Types.ObjectId(userId) };
+    if (categoryId !== 'ALL') match.categoryId = new Types.ObjectId(categoryId);
 
     if (query.withCardCount === true || query.withCardCount === 'true') {
       boxes = await this.boxModel
         .aggregate([
-          { $match: { userId: userObjectId, categoryId: categoryObjectId } },
+          { $match: match },
           {
             $lookup: {
               from: 'cards',
@@ -118,7 +118,7 @@ export class BoxService {
         .exec();
     } else {
       boxes = await this.boxModel
-        .find({ userId, categoryId })
+        .find(match)
         .sort({
           reviewInterval: 1,
         })
@@ -178,5 +178,13 @@ export class BoxService {
     }
 
     return await this.boxModel.findOneAndDelete({ _id: id, userId }).exec();
+  }
+
+  async deleteMany(categoryId: string) {
+    const result = await this.boxModel.deleteMany({ categoryId });
+    if (result.deletedCount === 0) {
+      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
+    }
+    return { success: true };
   }
 }
