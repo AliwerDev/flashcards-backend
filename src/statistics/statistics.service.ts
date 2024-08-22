@@ -113,8 +113,6 @@ export class StatisticsService {
     const cacheKey = this.createCacheKey('all', query, userId);
     let statistics: any = await this.cacheManager.get(cacheKey);
 
-    console.log(cacheKey, statistics);
-
     if (!statistics) {
       statistics = {};
       statistics.reviews = await this.getReviews(query, userId);
