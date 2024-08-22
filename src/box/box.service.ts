@@ -124,6 +124,14 @@ export class BoxService {
         })
         .exec();
     }
+
+    if (!boxes.length) {
+      throw new HttpException(
+        'Category is not available',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     return boxes;
   }
 
