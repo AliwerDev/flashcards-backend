@@ -13,6 +13,7 @@ import { CategoriesModule } from './categories/categories.module';
 // import { ServeStaticModule } from '@nestjs/serve-static';
 import { ChatModule } from './chat/chat.module';
 import { StatisticsModule } from './statistics/statistics.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
@@ -27,6 +28,11 @@ import { StatisticsModule } from './statistics/statistics.module';
     UserModule,
     ChatModule,
     StatisticsModule,
+    CacheModule.register({
+      ttl: 1000 * 60 * 60,
+      max: 200,
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -235,11 +235,7 @@ export class CardService {
     return await this.reviewModel.find({ userId });
   }
 
-  async deleteMany(categoryId: string) {
-    const result = await this.cardModel.deleteMany({ categoryId });
-    if (result.deletedCount === 0) {
-      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-    }
-    return { success: true };
+  deleteMany(categoryId: string) {
+    return this.cardModel.deleteMany({ categoryId });
   }
 }

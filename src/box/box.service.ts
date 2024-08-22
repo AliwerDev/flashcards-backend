@@ -180,11 +180,7 @@ export class BoxService {
     return await this.boxModel.findOneAndDelete({ _id: id, userId }).exec();
   }
 
-  async deleteMany(categoryId: string) {
-    const result = await this.boxModel.deleteMany({ categoryId });
-    if (result.deletedCount === 0) {
-      throw new HttpException('Category not found', HttpStatus.NOT_FOUND);
-    }
-    return { success: true };
+  deleteMany(categoryId: string) {
+    this.boxModel.deleteMany({ categoryId });
   }
 }

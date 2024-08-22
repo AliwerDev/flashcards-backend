@@ -1,7 +1,7 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../models/user.scheme';
@@ -9,10 +9,12 @@ import { UpdateRoleDto, UpdateUserDto } from './dto/update.dto';
 import { CategoriesService } from 'src/categories/categories.service';
 import { CreateChatDto } from 'src/chat/dto/create-chat.dto';
 import { ChatService } from 'src/chat/chat.service';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class UserService {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectModel(User.name) private userModel: Model<User>,
     readonly categoriesService: CategoriesService,
     readonly chatService: ChatService,
@@ -62,10 +64,14 @@ export class UserService {
   }
 
   async updateUser(data: UpdateUserDto, userId: string) {
-    return await this.userModel.findOneAndUpdate(
-      { _id: userId },
-      { firstName: data.firstName, lastName: data.lastName },
-    );
+    const user = await this.userModel.findOne({ _id: userId });
+
+    user.firstName = data.firstName;
+    user.lastName = data.lastName;
+    await user.save();
+
+    await this.cacheManager.set(userId, user);
+    return user;
   }
 
   async connectTgAccaunt(chat: CreateChatDto) {
@@ -140,28 +146,13 @@ export class UserService {
     return this.omitPassword(email);
   }
 
-  async findById(id: string) {
-    const userObjectId = new Types.ObjectId(id);
+  async findById(_id: string) {
+    let user = await this.cacheManager.get(_id);
 
-    const userArray = await this.userModel
-      .aggregate([
-        { $match: { _id: userObjectId } },
-        {
-          $lookup: {
-            from: 'categories',
-            localField: '_id',
-            foreignField: 'userId',
-            as: 'categories',
-          },
-        },
-        {
-          $project: {
-            password: 0,
-          },
-        },
-      ])
-      .exec();
-    const user = userArray.length > 0 ? userArray[0] : null;
+    if (!user) {
+      user = await this.userModel.findOne({ _id });
+      await this.cacheManager.set(_id, user, 1000 * 60 * 60);
+    }
 
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
@@ -177,7 +168,14 @@ export class UserService {
     return this.omitPassword(user.email);
   }
 
-  findByPayload(payload: any) {
-    return this.userModel.findById(payload.sub);
+  async findByPayload(payload: any) {
+    let user = await this.cacheManager.get(payload.sub);
+
+    if (!user) {
+      user = await this.userModel.findById(payload.sub);
+      this.cacheManager.set(payload.sub, user, 1000 * 60 * 60);
+    }
+
+    return user;
   }
 }

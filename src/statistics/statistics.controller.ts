@@ -33,7 +33,7 @@ export class StatisticsController {
   @Get('new-cards')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
-  findOne(@Query() query: FilterQueryDto, @User() user: UserEntity) {
+  newCards(@Query() query: FilterQueryDto, @User() user: UserEntity) {
     return this.statisticsService.getNewCards(query, String(user._id));
   }
 }
