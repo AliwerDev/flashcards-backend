@@ -4,29 +4,35 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { SharedModule } from './shared/shared.module';
 import { AuthModule } from './auth/auth.module';
-import { ProductModule } from './product/product.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
-import { OrderModule } from './order/order.module';
 import { CardModule } from './card/card.module';
 import { BoxModule } from './box/box.module';
 import { UserModule } from './user/user.module';
 import { AppController } from './app.controller';
-import { FilesModule } from './files/files.module';
+import { CategoriesModule } from './categories/categories.module';
+// import { join } from 'path';
+// import { ServeStaticModule } from '@nestjs/serve-static';
+import { ChatModule } from './chat/chat.module';
+import { StatisticsModule } from './statistics/statistics.module';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'files') }),
+    // ServeStaticModule.forRoot({ rootPath: join(__dirname, '..', 'files') }),
     MongooseModule.forRoot(process.env.MONGODB_URL),
     CardModule,
     BoxModule,
+    CategoriesModule,
     SharedModule,
     AuthModule,
-    ProductModule,
-    OrderModule,
     UserModule,
-    FilesModule,
+    ChatModule,
+    StatisticsModule,
+    CacheModule.register({
+      ttl: 1000 * 60 * 60,
+      max: 200,
+      isGlobal: true,
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -20,7 +20,6 @@ import { User } from '../decorators/user.decorator';
 import { User as UserEntity } from '../models/user.scheme';
 import { FilterQueryDto } from './dto/filter-query.dto';
 import { PlayedCardDto } from './dto/played-card.dto';
-import { MongoIdParamDto } from '../shared/dto/mongoId-param.dto';
 
 @ApiTags('Card')
 @Controller('card')
@@ -48,11 +47,11 @@ export class CardController {
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
   update(
-    @Param() params: MongoIdParamDto,
+    @Param('id') id: string,
     @Body() updateCardDto: UpdateCardDto,
     @User() user: UserEntity,
   ) {
-    return this.cardService.update(params.id, updateCardDto, String(user._id));
+    return this.cardService.update(id, updateCardDto, String(user._id));
   }
 
   @Get()
@@ -61,10 +60,13 @@ export class CardController {
     return this.cardService.findAll(query, String(user._id));
   }
 
-  @Get('active')
+  @Get('active/:categoryId')
   @UseGuards(AuthGuard('jwt'))
-  getActiveCards(@User() user: UserEntity) {
-    return this.cardService.getActiveCards(String(user._id));
+  getActiveCards(
+    @Param('categoryId') categoryId: string,
+    @User() user: UserEntity,
+  ) {
+    return this.cardService.getActiveCards(categoryId, String(user._id));
   }
 
   @Get('reviews')
@@ -76,21 +78,25 @@ export class CardController {
   @Get(':id')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
-  findOne(@Param() params: MongoIdParamDto, @User() user: UserEntity) {
-    return this.cardService.findOne(params.id, String(user._id));
+  findOne(@Param('id') id: string, @User() user: UserEntity) {
+    return this.cardService.findOne(id, String(user._id));
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
-  remove(@Param() params: MongoIdParamDto, @User() user: UserEntity) {
-    return this.cardService.remove(params.id, String(user._id));
+  remove(@Param('id') id: string, @User() user: UserEntity) {
+    return this.cardService.remove(id, String(user._id));
   }
 
-  @Post('play')
+  @Post('play/:categoryId')
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
-  play(@Body() playedCardDto: PlayedCardDto, @User() user: UserEntity) {
-    return this.cardService.play(playedCardDto, String(user._id));
+  play(
+    @Param('categoryId') categoryId: string,
+    @Body() playedCardDto: PlayedCardDto,
+    @User() user: UserEntity,
+  ) {
+    return this.cardService.play(categoryId, playedCardDto, String(user._id));
   }
 }

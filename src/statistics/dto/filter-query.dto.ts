@@ -1,13 +1,13 @@
-import { IsOptional, IsString, IsMongoId } from 'class-validator';
+import { IsOptional, IsMongoId, IsString } from 'class-validator';
 
 export class FilterQueryDto {
   @IsOptional()
   @IsString()
-  search?: string;
+  from?: string;
 
   @IsOptional()
-  @IsMongoId()
-  boxId?: string;
+  @IsString()
+  to?: string;
 
   @IsOptional()
   @IsMongoId()

@@ -7,6 +7,13 @@ export class Box extends Document {
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
   userId: mongoose.Schema.Types.ObjectId;
 
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category',
+    required: true,
+  })
+  categoryId: mongoose.Schema.Types.ObjectId;
+
   @Prop({ required: true })
   reviewInterval: number;
 }

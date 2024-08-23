@@ -1,18 +1,23 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { User } from '../models/user.scheme';
-import { BoxService } from 'src/box/box.service';
-import { UpdateRoleDto } from './dto/update.dto';
+import { UpdateRoleDto, UpdateUserDto } from './dto/update.dto';
+import { CategoriesService } from 'src/categories/categories.service';
+import { CreateChatDto } from 'src/chat/dto/create-chat.dto';
+import { ChatService } from 'src/chat/chat.service';
+import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 
 @Injectable()
 export class UserService {
   constructor(
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
     @InjectModel(User.name) private userModel: Model<User>,
-    readonly boxService: BoxService,
+    readonly categoriesService: CategoriesService,
+    readonly chatService: ChatService,
   ) {}
 
   private omitPassword(email: string) {
@@ -31,7 +36,19 @@ export class UserService {
     const savedUser = await newUser.save();
 
     // CREATE DEFAULT BOX FOR USER
-    await this.boxService.createDefaultBoxes(String(savedUser._id));
+
+    const defaultCategory = await this.categoriesService.create(
+      { title: 'Default' },
+      String(savedUser._id),
+    );
+
+    if (!defaultCategory) {
+      throw new HttpException(
+        'Internal server error',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
     return this.omitPassword(email);
   }
 
@@ -44,6 +61,33 @@ export class UserService {
       { _id: data.userId },
       { role: data.role },
     );
+  }
+
+  async updateUser(data: UpdateUserDto, userId: string) {
+    const user = await this.userModel.findOne({ _id: userId });
+
+    user.firstName = data.firstName;
+    user.lastName = data.lastName;
+    await user.save();
+
+    await this.cacheManager.set(userId, user);
+    return user;
+  }
+
+  async connectTgAccaunt(chat: CreateChatDto) {
+    const existChat = await this.chatService.findOne(chat.id);
+    if (existChat) {
+      throw new HttpException('Chat already connected', HttpStatus.CONFLICT);
+    }
+
+    const user = await this.userModel.findOne({ _id: chat.userId }).exec();
+    if (!user) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    await this.chatService.create(chat);
+
+    return user;
   }
 
   async findAll(user: User) {
@@ -62,13 +106,23 @@ export class UserService {
           },
         },
         {
+          $lookup: {
+            from: 'reviews',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'reviews',
+          },
+        },
+        {
           $addFields: {
             cardCount: { $size: '$cards' },
+            reviewsCount: { $size: '$reviews' },
           },
         },
         {
           $project: {
             cards: 0,
+            reviews: 0,
             password: 0,
           },
         },
@@ -92,8 +146,14 @@ export class UserService {
     return this.omitPassword(email);
   }
 
-  async findById(id: string) {
-    const user = await this.userModel.findById(id, '-password');
+  async findById(_id: string) {
+    let user = await this.cacheManager.get(_id);
+
+    if (!user) {
+      user = await this.userModel.findOne({ _id });
+      await this.cacheManager.set(_id, user, 1000 * 60 * 60);
+    }
+
     if (!user) {
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
     }
@@ -108,7 +168,14 @@ export class UserService {
     return this.omitPassword(user.email);
   }
 
-  findByPayload(payload: any) {
-    return this.userModel.findById(payload.sub);
+  async findByPayload(payload: any) {
+    let user = await this.cacheManager.get(payload.sub);
+
+    if (!user) {
+      user = await this.userModel.findById(payload.sub);
+      this.cacheManager.set(payload.sub, user, 1000 * 60 * 60);
+    }
+
+    return user;
   }
 }

@@ -3,14 +3,12 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    bodyParser: true,
-    logger: ['error', 'warn'],
-  });
+  const app = await NestFactory.create(AppModule, { bodyParser: true });
 
   app.enableCors({
     origin: [
       'https://flashcardes.vercel.app',
+      'https://flashcards.uz',
       'https://cards.scripter.uz',
       'http://localhost:3000',
       'http://localhost:3001',

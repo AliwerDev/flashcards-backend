@@ -20,7 +20,7 @@ export class BoxService {
   async create(box: CreateBoxDto, userId: string): Promise<Box> {
     const existingBox = await this.boxModel.findOne({
       reviewInterval: box.reviewInterval,
-      userId,
+      categoryId: box.categoryId,
     });
 
     if (existingBox) {
@@ -35,14 +35,14 @@ export class BoxService {
     return createdBox.save();
   }
 
-  async createDefaultBoxes(userId: string) {
+  async createDefaultBoxes(categoryId: string, userId: string) {
     const defaultBoxes = [
-      { reviewInterval: 0, userId }, // Daily
-      { reviewInterval: 1440, userId }, // Daily
-      { reviewInterval: 2880, userId }, // Every 2 days
-      { reviewInterval: 10080, userId }, // Weekly
-      { reviewInterval: 20160, userId }, // Biweekly
-      { reviewInterval: 43200, userId }, // Monthly
+      { reviewInterval: 0, userId, categoryId }, // Daily
+      { reviewInterval: 86400, userId, categoryId }, // Daily
+      { reviewInterval: 172800, userId, categoryId }, // Every 2 days
+      { reviewInterval: 604800, userId, categoryId }, // Weekly
+      { reviewInterval: 1209600, userId, categoryId }, // Biweekly
+      { reviewInterval: 2592000, userId, categoryId }, // Monthly
     ];
 
     try {
@@ -82,14 +82,19 @@ export class BoxService {
     return existingBox;
   }
 
-  async findAll(query: BoxSearchQueryDto, userId: string): Promise<Box[]> {
-    const userObjectId = new Types.ObjectId(userId);
+  async findAll(
+    categoryId: string,
+    userId: string,
+    query: BoxSearchQueryDto,
+  ): Promise<Box[]> {
     let boxes: Box[];
+    const match: any = { userId: new Types.ObjectId(userId) };
+    if (categoryId !== 'ALL') match.categoryId = new Types.ObjectId(categoryId);
 
     if (query.withCardCount === true || query.withCardCount === 'true') {
       boxes = await this.boxModel
         .aggregate([
-          { $match: { userId: userObjectId } },
+          { $match: match },
           {
             $lookup: {
               from: 'cards',
@@ -113,12 +118,20 @@ export class BoxService {
         .exec();
     } else {
       boxes = await this.boxModel
-        .find({ userId: userObjectId })
+        .find(match)
         .sort({
           reviewInterval: 1,
         })
         .exec();
     }
+
+    if (!boxes.length) {
+      throw new HttpException(
+        'Category is not available',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
     return boxes;
   }
 
@@ -173,5 +186,9 @@ export class BoxService {
     }
 
     return await this.boxModel.findOneAndDelete({ _id: id, userId }).exec();
+  }
+
+  deleteMany(categoryId: string) {
+    this.boxModel.deleteMany({ categoryId });
   }
 }
