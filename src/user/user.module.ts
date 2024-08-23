@@ -7,8 +7,8 @@ import { BoxModule } from 'src/box/box.module';
 
 @Module({
   imports: [
-    BoxModule,
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    BoxModule,
   ],
   controllers: [UserController],
   providers: [UserService],
