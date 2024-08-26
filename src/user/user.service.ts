@@ -10,6 +10,7 @@ import { CategoriesService } from 'src/categories/categories.service';
 import { CreateChatDto } from 'src/chat/dto/create-chat.dto';
 import { ChatService } from 'src/chat/chat.service';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
+import { createCacheKey } from 'src/utils/functions';
 
 @Injectable()
 export class UserService {
@@ -134,6 +135,7 @@ export class UserService {
   async findByLogin(userDto: LoginDto) {
     const { email, password } = userDto;
     const user = await this.userModel.findOne({ email });
+
     if (!user) {
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
     }
@@ -147,11 +149,12 @@ export class UserService {
   }
 
   async findById(_id: string) {
-    let user = await this.cacheManager.get(_id);
+    const cacheKey = createCacheKey.user(_id);
+    let user = await this.cacheManager.get(cacheKey);
 
     if (!user) {
       user = await this.userModel.findOne({ _id });
-      await this.cacheManager.set(_id, user, 1000 * 60 * 60);
+      await this.cacheManager.set(cacheKey, user, 1000 * 60 * 60);
     }
 
     if (!user) {
@@ -162,18 +165,21 @@ export class UserService {
 
   async findByEmail(email: string) {
     const user = await this.userModel.findOne({ email });
+
     if (!user) {
       return null;
     }
+
     return this.omitPassword(user.email);
   }
 
   async findByPayload(payload: any) {
-    let user = await this.cacheManager.get(payload.sub);
+    const cacheKey = createCacheKey.user(payload.sub);
+    let user = await this.cacheManager.get(cacheKey);
 
     if (!user) {
       user = await this.userModel.findById(payload.sub);
-      this.cacheManager.set(payload.sub, user, 1000 * 60 * 60);
+      this.cacheManager.set(cacheKey, user, 1000 * 60 * 60);
     }
 
     return user;

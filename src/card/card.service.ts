@@ -7,13 +7,15 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { CreateCardDto, CreateCardsDto } from './dto/create-card.dto';
+import { CreateCardDto } from './dto/create-card.dto';
+import { CreateCardsDto } from './dto/create-cards.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { Card, ICard } from '../models/card.scheme';
 import { FilterQueryDto } from './dto/filter-query.dto';
 import { PlayedCardDto } from './dto/played-card.dto';
 import { Review } from '../models/review.scheme';
 import { BoxService } from 'src/box/box.service';
+import DeleteCardsDto from './dto/delete-cards.dto';
 
 // Injectable service class for handling Card-related operations
 @Injectable()
@@ -174,17 +176,6 @@ export class CardService {
     return card;
   }
 
-  // Method to delete a card by its ID and user ID
-  async remove(id: string, userId: string): Promise<Card> {
-    const card = await this.cardModel.findOne({ _id: id, userId }).exec();
-
-    if (!card) {
-      throw new NotFoundException('Card not found');
-    }
-
-    return await this.cardModel.findOneAndDelete({ _id: id, userId }).exec();
-  }
-
   // Method to handle playing a card and updating its box based on correctness
   async play(categoryId: string, playedCardDto: PlayedCardDto, userId: string) {
     const { cardId, correct } = playedCardDto;
@@ -235,7 +226,32 @@ export class CardService {
     return await this.reviewModel.find({ userId });
   }
 
-  deleteMany(categoryId: string) {
+  // =====================DELETE METHODS================================================
+  async delete(id: string, userId: string): Promise<Card> {
+    const card = await this.cardModel.findOne({ _id: id, userId }).exec();
+
+    if (!card) {
+      throw new NotFoundException('Card not found');
+    }
+
+    return await this.cardModel.findOneAndDelete({ _id: id, userId }).exec();
+  }
+
+  async deleteMany({ ids }: DeleteCardsDto, userId: string): Promise<Card[]> {
+    const cards = await this.cardModel
+      .find({ _id: { $in: ids }, userId })
+      .exec();
+
+    if (!cards.length) {
+      throw new NotFoundException('No cards found for the provided IDs');
+    }
+
+    await this.cardModel.deleteMany({ _id: { $in: ids }, userId }).exec();
+
+    return cards;
+  }
+
+  deleteByCategory(categoryId: string) {
     return this.cardModel.deleteMany({ categoryId });
   }
 }
