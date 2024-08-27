@@ -17,6 +17,8 @@ import { GoogleLoginDto } from '../shared/dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/decorators/user.decorator';
 import { User as UserEntity } from 'src/models/user.scheme';
+import { generateOtp } from 'src/utils/functions';
+import { EmailService } from 'src/email/email.service';
 
 const client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -28,6 +30,7 @@ const client = new OAuth2Client(
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly emailService: EmailService,
     private userService: UserService,
   ) {}
 
@@ -89,5 +92,13 @@ export class AuthController {
     const payload = { email: user.email, sub: user._id };
     const token = await this.authService.signInPayload(payload);
     return token;
+  }
+
+  @Post('send-otp')
+  async sendOtp(@Body() data: { email: string }) {
+    const otp = generateOtp();
+    this.emailService.sendOtp(data.email, otp);
+
+    return 'Email sent';
   }
 }

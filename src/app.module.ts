@@ -14,6 +14,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { ChatModule } from './chat/chat.module';
 import { StatisticsModule } from './statistics/statistics.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { EmailModule } from './email/email.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CacheModule } from '@nestjs/cache-manager';
       max: 200,
       isGlobal: true,
     }),
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

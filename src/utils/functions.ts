@@ -1,3 +1,5 @@
+import { FilterQueryDto } from 'src/statistics/dto/filter-query.dto';
+
 export function getQueryParamFromUrl(
   url: string,
   queryParam: string,
@@ -14,4 +16,19 @@ export function createUrlFromTitle(title: string): string {
     .trim() // Remove leading/trailing spaces
     .replace(/\s+/g, '-') // Replace spaces with hyphens
     .replace(/--+/g, '-'); // Replace multiple hyphens with a single hyphen
+}
+
+export const createCacheKey = {
+  user: (userId: string): string => `${userId}.me`,
+  categories: (userId: string): string => `${userId}.categories`,
+
+  statistics: (categoryOrUserId: string, query: FilterQueryDto): string => {
+    const from = new Date(+query.from).toDateString();
+    const to = new Date(+query.to).toDateString();
+    return `${categoryOrUserId + from + to}.statistics`;
+  },
+};
+
+export function generateOtp(length: number = 6): string {
+  return Math.random().toString().slice(-length);
 }

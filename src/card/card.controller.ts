@@ -12,7 +12,8 @@ import {
   Query,
 } from '@nestjs/common';
 import { CardService } from './card.service';
-import { CreateCardDto, CreateCardsDto } from './dto/create-card.dto';
+import { CreateCardDto } from './dto/create-card.dto';
+import { CreateCardsDto } from './dto/create-cards.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -20,6 +21,7 @@ import { User } from '../decorators/user.decorator';
 import { User as UserEntity } from '../models/user.scheme';
 import { FilterQueryDto } from './dto/filter-query.dto';
 import { PlayedCardDto } from './dto/played-card.dto';
+import DeleteCardsDto from './dto/delete-cards.dto';
 
 @ApiTags('Card')
 @Controller('card')
@@ -86,7 +88,14 @@ export class CardController {
   @UseGuards(AuthGuard('jwt'))
   @UsePipes(new ValidationPipe())
   remove(@Param('id') id: string, @User() user: UserEntity) {
-    return this.cardService.remove(id, String(user._id));
+    return this.cardService.delete(id, String(user._id));
+  }
+
+  @Delete()
+  @UseGuards(AuthGuard('jwt'))
+  @UsePipes(new ValidationPipe())
+  removeList(@Body() deleteCardsDto: DeleteCardsDto, @User() user: UserEntity) {
+    return this.cardService.deleteMany(deleteCardsDto, String(user._id));
   }
 
   @Post('play/:categoryId')

@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Category } from 'src/models/category.scheme';
 import { Model } from 'mongoose';
 import { BoxService } from 'src/box/box.service';
-import { createUrlFromTitle } from 'src/utils/functions';
+import { createCacheKey, createUrlFromTitle } from 'src/utils/functions';
 import { CardService } from 'src/card/card.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
@@ -18,35 +18,31 @@ export class CategoriesService {
     readonly cardService: CardService,
   ) {}
 
-  private createCacheKey(userId: string): string {
-    return `categories.${userId}`;
-  }
-
   async create(createCategoryDto: CreateCategoryDto, userId: string) {
-    const cacheKey = this.createCacheKey(userId);
+    const cacheKey = createCacheKey.categories(userId);
     const categories = await this.categoryModel.find({ userId });
 
-    if (categories.length >= 5) {
+    if (categories.length >= 7) {
       throw new HttpException(
         'Maximum number of categories reached',
         HttpStatus.FORBIDDEN,
       );
     }
 
-    const category = {
+    const categoryDto = {
       title: createCategoryDto.title,
       url: createUrlFromTitle(createCategoryDto.title),
       userId,
     };
-    const newCategory = new this.categoryModel(category);
+    const category = new this.categoryModel(categoryDto);
 
-    await this.cacheManager.del(cacheKey);
-    await this.boxService.createDefaultBoxes(String(newCategory._id), userId);
-    return await newCategory.save();
+    await this.boxService.createDefaultBoxes(String(category), userId);
+    this.cacheManager.set(cacheKey, [...categories, category]);
+    return category.save();
   }
 
   async findAll(userId: string) {
-    const cacheKey = this.createCacheKey(userId);
+    const cacheKey = createCacheKey.categories(userId);
     let categories: any = await this.cacheManager.get(cacheKey);
 
     if (!categories) {
@@ -71,7 +67,7 @@ export class CategoriesService {
     updateCategoryDto: UpdateCategoryDto,
     userId: string,
   ) {
-    const cacheKey = this.createCacheKey(userId);
+    const cacheKey = createCacheKey.categories(userId);
     const category = await this.categoryModel.findOne({ userId, _id: id });
 
     if (!category) {
@@ -86,7 +82,7 @@ export class CategoriesService {
   }
 
   async remove(id: string, userId: string) {
-    const cacheKey = this.createCacheKey(userId);
+    const cacheKey = createCacheKey.categories(userId);
     const categories = await this.categoryModel.find({ userId });
 
     if (categories.length === 1) {
@@ -99,7 +95,7 @@ export class CategoriesService {
     await this.categoryModel.deleteOne({ userId, _id: id });
     await this.cacheManager.del(cacheKey);
     await this.boxService.deleteMany(id);
-    await this.cardService.deleteMany(id);
+    await this.cardService.deleteByCategory(id);
 
     return `This action removes a #${id} category and all related cards and boxes`;
   }

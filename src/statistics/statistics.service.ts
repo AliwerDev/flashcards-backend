@@ -5,6 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Review } from 'src/models/review.scheme';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
+import { createCacheKey } from 'src/utils/functions';
 
 @Injectable()
 export class StatisticsService {
@@ -13,16 +14,6 @@ export class StatisticsService {
     @InjectModel(Review.name) private readonly reviewModel: Model<Review>,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) {}
-
-  private createCacheKey(
-    key: string,
-    query: FilterQueryDto,
-    userId: string,
-  ): string {
-    const from = new Date(+query.from).toDateString(),
-      to = new Date(+query.to).toDateString();
-    return `statistics.${key}.${query.categoryId + from + to}.${userId}`;
-  }
 
   async getReviews(query: FilterQueryDto, userId: string) {
     const now = new Date();
@@ -110,7 +101,7 @@ export class StatisticsService {
   }
 
   async getAll(query: FilterQueryDto, userId: string) {
-    const cacheKey = this.createCacheKey('all', query, userId);
+    const cacheKey = createCacheKey.statistics(userId, query);
     let statistics: any = await this.cacheManager.get(cacheKey);
 
     if (!statistics) {
