@@ -1,4 +1,3 @@
-// src/boxes/boxes.controller.ts
 import { Controller, Get } from '@nestjs/common';
 
 @Controller()

@@ -5,9 +5,8 @@ import * as mongoose from 'mongoose';
 export interface ICard {
   userId: string;
   boxId: string;
+  wordId: string;
   categoryId: string;
-  front: string;
-  back: string;
   lastViewedDate: number;
   nextReviewDate: number;
 }
@@ -27,11 +26,12 @@ export class Card extends Document {
   })
   categoryId: string;
 
-  @Prop({ required: true })
-  front: string;
-
-  @Prop({ required: true })
-  back: string;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Word',
+    required: true,
+  })
+  wordId: string;
 
   @Prop({ type: Number, default: Date.now() })
   lastViewedDate: number;

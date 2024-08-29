@@ -1,4 +1,4 @@
-import { FilterQueryDto } from 'src/statistics/dto/filter-query.dto';
+import { FilterQueryDto } from 'src/modules/statistics/dto/filter-query.dto';
 
 export function getQueryParamFromUrl(
   url: string,

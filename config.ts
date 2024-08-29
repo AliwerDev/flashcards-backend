@@ -1,4 +1,10 @@
 const appConfig = {
+  defaultCacheConfiguration: {
+    ttl: 1000 * 60 * 60,
+    max: 200,
+    isGlobal: true,
+  },
+  jwtTokenExpiration: '30d',
   env: {
     PORT: process.env.PORT,
     JWT_SECRET: process.env.JWT_SECRET,
