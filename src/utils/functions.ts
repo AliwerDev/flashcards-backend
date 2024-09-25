@@ -1,3 +1,4 @@
+import * as moment from 'moment';
 import { FilterQueryDto } from 'src/statistics/dto/filter-query.dto';
 
 export function getQueryParamFromUrl(
@@ -31,4 +32,19 @@ export const createCacheKey = {
 
 export function generateOtp(length: number = 6): string {
   return Math.random().toString().slice(-length);
+}
+
+export function getDaysObjectByDuration(startDate: number, endDate: number) {
+  const daysObject: any = {};
+  const currentDate = moment(startDate);
+  const lastDate = moment(endDate);
+
+  while (!currentDate.isAfter(lastDate)) {
+    daysObject[currentDate.format('YYYY-MM-DD')] = {
+      _id: currentDate.format('YYYY-MM-DD'),
+    };
+    currentDate.add(1, 'days');
+  }
+
+  return daysObject;
 }

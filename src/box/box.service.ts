@@ -48,6 +48,8 @@ export class BoxService {
     try {
       await this.boxModel.insertMany(defaultBoxes);
     } catch (error) {
+      console.log('error is occurred', error);
+
       throw new HttpException(
         'Error creating default boxes',
         HttpStatus.INTERNAL_SERVER_ERROR,

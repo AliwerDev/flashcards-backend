@@ -5,7 +5,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Category } from 'src/models/category.scheme';
 import { Model } from 'mongoose';
 import { BoxService } from 'src/box/box.service';
-import { createCacheKey, createUrlFromTitle } from 'src/utils/functions';
+import { createCacheKey } from 'src/utils/functions';
 import { CardService } from 'src/card/card.service';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 
@@ -31,12 +31,11 @@ export class CategoriesService {
 
     const categoryDto = {
       title: createCategoryDto.title,
-      url: createUrlFromTitle(createCategoryDto.title),
       userId,
     };
     const category = new this.categoryModel(categoryDto);
 
-    await this.boxService.createDefaultBoxes(String(category), userId);
+    await this.boxService.createDefaultBoxes(String(category._id), userId);
     this.cacheManager.set(cacheKey, [...categories, category]);
     return category.save();
   }
@@ -75,7 +74,6 @@ export class CategoriesService {
     }
 
     category.title = updateCategoryDto.title;
-    category.url = createUrlFromTitle(category.title);
 
     await this.cacheManager.del(cacheKey);
     return await category.save();

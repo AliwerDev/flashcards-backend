@@ -159,7 +159,7 @@ export class CardService {
             nextReviewDate: { $lt: now },
           },
         },
-        { $sort: { lastViewedDate: 1 } },
+        { $sort: { nextReviewDate: 1 } },
       ])
       .exec();
 

@@ -8,9 +8,6 @@ export class Category extends Document {
   userId: mongoose.Schema.Types.ObjectId;
 
   @Prop({ required: true })
-  url: string;
-
-  @Prop({ required: true })
   title: string;
 }
 
